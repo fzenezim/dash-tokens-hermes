@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VPS Command Center</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #0f172a; color: white; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 40px 20px; }
+        h1 { color: #f8fafc; margin-bottom: 30px; font-weight: 300; letter-spacing: -1px; }
+        .section-title { width: 100%; max-width: 800px; color: #64748b; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px; margin: 30px 0 15px 0; border-bottom: 1px solid #1e293b; padding-bottom: 5px; }
+        .grid { display: grid; gap: 20px; width: 100%; max-width: 800px; }
+        .token-grid { grid-template-columns: repeat(2, 1fr); }
+        .link-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+        .card { background: #1e293b; padding: 20px; border-radius: 16px; border: 1px solid #334155; text-align: center; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); }
+        .value { font-size: 2.2rem; font-weight: 700; color: #38bdf8; margin: 10px 0; }
+        .label { color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; }
+        .link-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 20px; border-radius: 16px; border: 1px solid #334155; text-decoration: none; color: white; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .link-card:hover { transform: translateY(-3px); border-color: #38bdf8; box-shadow: 0 10px 15px -3px rgba(56, 189, 248, 0.2); background: #1e293b; }
+        .link-icon { font-size: 1.5rem; }
+        .health-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; max-width: 800px; }
+        .health-card { background: #1e293b; padding: 15px; border-radius: 16px; border: 1px solid #334155; text-align: center; }
+        .progress-bg { background: #0f172a; height: 8px; border-radius: 4px; margin: 15px 0; overflow: hidden; }
+        .progress-fill { background: linear-gradient(90deg, #0ea5e9, #38bdf8); height: 100%; transition: width 0.8s; }
+        .chart-container { background: #1e293b; padding: 25px; border-radius: 16px; border: 1px solid #334155; width: 100%; max-width: 800px; margin-top: 20px; }
+        .file-list { background: #1e293b; padding: 20px; border-radius: 16px; border: 1px solid #334155; width: 100%; max-width: 800px; color: #f8fafc; }
+        .file-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #334155; }
+        .file-item:last-child { border-bottom: none; }
+        .download-btn { background: #38bdf8; color: #0f172a; padding: 5px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <h1>VPS Command Center</h1>
+    
+    <div class="section-title">Acesso Rápido (VPS)</div>
+    <div class="grid link-grid">
+        <a href="{{N8N_URL}}" target="_blank" class="link-card"><span class="link-icon">🚀</span> n8n Automation</a>
+        <a href="{{WEBUI_URL}}" target="_blank" class="link-card"><span class="link-icon">🤖</span> Open WebUI</a>
+        <a href="{{SEARCH_URL}}" target="_blank" class="link-card"><span class="link-icon">🔍</span> SearXNG Search</a>
+        <a href="{{OLLAMA_URL}}" target="_blank" class="link-card"><span class="link-icon">🦙</span> Ollama API</a>
+        <a href="{{EASYPANEL_URL}}" target="_blank" class="link-card"><span class="link-icon">🛠️</span> Easypanel</a>
+        <a href="{{PIHOLE_URL}}" target="_blank" class="link-card"><span class="link-icon">🛡️</span> Pi-hole Admin</a>
+        <a href="{{HERMES_URL}}" target="_blank" class="link-card"><span class="link-icon">✨</span> Hermes Dashboard</a>
+    </div>
+
+    <div class="section-title">Links Externos</div>
+    <div class="grid link-grid">
+        <a href="https://www.oracle.com/cloud/sign-in.html?redirect_uri=https%3A%2F%2Fcloud.oracle.com%2F" target="_blank" class="link-card"><span class="link-icon">☁️</span> Oracle Cloud</a>
+        <a href="https://www.cloudflare.com/pt-br/" target="_blank" class="link-card"><span class="link-icon">🌐</span> Cloudflare</a>
+        <a href="https://aistudio.google.com/rate-limit?timeRange=last-28-days" target="_blank" class="link-card"><span class="link-icon">🧠</span> Google AI Studio</a>
+        <a href="https://github.com/" target="_blank" class="link-card"><span class="link-icon">🐙</span> GitHub</a>
+        <a href="https://tailscale.com/" target="_blank" class="link-card"><span class="link-icon">🧬</span> Tailscale</a>
+    </div>
+
+    <div class="section-title">Saúde do Sistema</div>
+    <div class="health-grid">
+        <div class="health-card"><div class="label">CPU</div><div class="value" id="cpu-val">0%</div><div class="progress-bg"><div class="progress-fill" id="cpu-bar" style="width: 0%"></div></div></div>
+        <div class="health-card"><div class="label">RAM</div><div class="value" id="ram-val">0%</div><div class="progress-bg"><div class="progress-fill" id="ram-bar" style="width: 0%"></div></div></div>
+        <div class="health-card"><div class="label">DISCO</div><div class="value" id="disk-val">0%</div><div class="progress-bg"><div class="progress-fill" id="disk-bar" style="width: 0%"></div></div></div>
+    </div>
+    <div class="section-title">Consumo de Tokens</div>
+    <div class="grid token-grid">
+        <div class="card"><div class="label">Requisições Hoje</div><div class="value" id="today-reqs">0</div></div>
+        <div class="card"><div class="label">Tokens Hoje</div><div class="value" id="today-tokens">0</div></div>
+        <div class="card"><div class="label">Total Requisições</div><div class="value" id="total-reqs">0</div></div>
+        <div class="card"><div class="label">Total Tokens</div><div class="value" id="total-tokens">0</div></div>
+    </div>
+    <div class="section-title">Histórico de Consumo</div>
+    <div class="chart-container"><canvas id="tokenChart"></canvas></div>
+    
+    <div class="section-title">Meus Documentos (/home/ubuntu/documentos)</div>
+    <div class="file-list" id="file-list">
+        <p style="text-align: center; color: #94a3b8;">Carregando arquivos...</p>
+    </div>
+
+    <script>
+        const ctx = document.getElementById("tokenChart").getContext("2d");
+        const tokenChart = new Chart(ctx, {
+            type: "line",
+            data: { labels: [], datasets: [{ label: "Tokens", data: [], borderColor: "#38bdf8", backgroundColor: "rgba(56, 189, 248, 0.2)", fill: true, tension: 0.4 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: "rgba(51, 65, 85, 0.5)" } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+        });
+        async function updateDashboard() {
+            try {
+                const response = await fetch("/api/stats");
+                const data = await response.json();
+                document.getElementById("today-reqs").innerText = data.stats.today_reqs;
+                document.getElementById("today-tokens").innerText = data.stats.today_tokens.toLocaleString();
+                document.getElementById("total-reqs").innerText = data.stats.total_reqs;
+                document.getElementById("total-tokens").innerText = data.stats.total_tokens.toLocaleString();
+                document.getElementById("cpu-val").innerText = data.sys_metrics.cpu.toFixed(1) + "%";
+                document.getElementById("cpu-bar").style.width = data.sys_metrics.cpu + "%";
+                document.getElementById("ram-val").innerText = data.sys_metrics.ram.toFixed(1) + "%";
+                document.getElementById("ram-bar").style.width = data.sys_metrics.ram + "%";
+                document.getElementById("disk-val").innerText = data.sys_metrics.disk.toFixed(1) + "%";
+                document.getElementById("disk-bar").style.width = data.sys_metrics.disk + "%";
+                if (data.stats.chart_labels && data.stats.chart_labels.length > 0) {
+                    tokenChart.data.labels = data.stats.chart_labels;
+                    tokenChart.data.datasets[0].data = data.stats.chart_values;
+                    tokenChart.update("none");
+                }
+            } catch (e) { console.error(e); }
+        }
+        async function loadFiles() {
+            try {
+                const response = await fetch("/api/files");
+                const data = await response.json();
+                const listDiv = document.getElementById("file-list");
+                if (data.files && data.files.length > 0) {
+                    listDiv.innerHTML = "";
+                    data.files.forEach(file => {
+                        listDiv.innerHTML += `<div class="file-item"><span>${file}</span><a href="/download/${file}" class="download-btn">Baixar</a></div>`;
+                    });
+                } else {
+                    listDiv.innerHTML = "<p style='text-align: center; color: #94a3b8;'>Nenhum arquivo encontrado.</p>";
+                }
+            } catch (e) { console.error(e); }
+        }
+        setInterval(updateDashboard, 5000);
+        updateDashboard();
+        loadFiles();
+    </script>
+</body>
+</html>
