@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 app = FastAPI()
 security = HTTPBasic()
 
-# --- CAMINHO NATIVO VPS ---
-DB_PATH = os.getenv("DATABASE_URL", "/home/ubuntu/dash-tokens-hermes/tokens.db") 
+# --- CAMINHO REAL DO GATEWAY (Sincronizado e Fixado) ---
+DB_PATH = "/home/ubuntu/hermes_data/tokens.db" 
 DOCS_PATH = "/home/ubuntu/documentos"
 
 # --- SEGURANÇA: Valores padrão genéricos para portfólio público ---
